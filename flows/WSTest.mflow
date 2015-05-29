@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mule-configuration xmlns="http://www.mulesoft.com/tooling/messageflow" name="WSTest">
+    <global-element name="InputServiceMultiDb" type="http://www.mulesoft.org/schema/mule/core/custom-transformer" entity-id="6233144f-9b01-4349-879e-44d999bdbe4a">
+        <properties>
+            <property name="returnClass"/>
+            <property name="ignoreBadInput"/>
+            <property name="encoding"/>
+            <property name="mimeType"/>
+            <property name="class" value="com.bankmega.multidb.transformer.RequestToInputServiceMultiDb"/>
+            <property name="name" value="InputServiceMultiDb"/>
+        </properties>
+    </global-element>
+    <global-element name="Property Placeholder" type="http://www.springframework.org/schema/context/property-placeholder" entity-id="e4e07d93-f5ba-4075-bc90-5c8c5d014444">
+        <properties>
+            <property name="location" value="classpath:service.properties"/>
+        </properties>
+    </global-element>
+    <global-element name="Bean" type="http://www.springframework.org/schema/beans/bean" entity-id="28e3cb7b-880c-4189-a2c2-8e855d7e1d5c">
+        <properties>
+            <property name="id" value="Bean"/>
+            <property name="name" value="props"/>
+            <property name="class" value="com.bankmega.multidb.beans.MapHolder"/>
+            <property name="parent"/>
+            <property name="scope"/>
+            <property name="children"/>
+            <property name="abstract"/>
+            <property name="lazy-init"/>
+            <property name="autowire"/>
+            <property name="depends-on"/>
+            <property name="autowire-candidate"/>
+            <property name="primary"/>
+            <property name="init-method"/>
+            <property name="destroy-method"/>
+            <property name="factory-method"/>
+            <property name="factory-bean"/>
+            <property-collection name="@http://www.springframework.org/schema/beans/property;0">
+                <property name="name" value="map"/>
+                <property-collection name="@http://www.springframework.org/schema/beans/map;1">
+                    <property-collection name="@http://www.springframework.org/schema/beans/entry;1">
+                        <property name="value" value="${/person/get}"/>
+                        <property name="key" value="/person/get"/>
+                    </property-collection>
+                    <property-collection name="@http://www.springframework.org/schema/beans/entry;2">
+                        <property name="value" value="${/ib/getUser}"/>
+                        <property name="key" value="/ib/getUser"/>
+                    </property-collection>
+                </property-collection>
+            </property-collection>
+        </properties>
+    </global-element>
+    <global-element name="Java" type="http://www.mulesoft.org/schema/mule/core/custom-transformer" entity-id="44bfb17f-b56f-490f-a101-dd5a16879e01">
+        <properties>
+            <property name="returnClass"/>
+            <property name="ignoreBadInput"/>
+            <property name="encoding"/>
+            <property name="mimeType"/>
+            <property name="class" value="com.bankmega.multidb.transformer.OutputServiceMultiDbToMap"/>
+            <property name="name" value="OutputServiceMultiDb"/>
+        </properties>
+    </global-element>
+    <flow SubFlow="true" name="multiDBCaller">
+        <properties>
+            <property name="processingStrategy2"/>
+            <property name="processingStrategy"/>
+            <property name="bussinessEventsLabel"/>
+            <property name="tracking:enable-default-events"/>
+        </properties>
+        <lane hadOnlyOneElement="false" entity-id="12b744d4-f7e3-4474-a079-a837562e7aef">
+            <pattern name="Request to InputServiceMultiDb" type="org.mule.tooling.ui.modules.core.pattern.globalXformRef" entity-id="ee311214-5a1a-4647-bfd7-1ef846d3a773">
+                <properties>
+                    <property name="ref" value="InputServiceMultiDb"/>
+                </properties>
+            </pattern>
+            <pattern name="getServiceMultiDb" type="http://www.mulesoft.org/schema/mule/cxf/soapComponent" entity-id="9f4e84ac-6a03-47f0-92dc-a1a99088edeb">
+                <properties>
+                    <property name="wsdlLocation" value=""/>
+                    <property name="port" value="ServicePortTypeBndPortMultiDb"/>
+                    <property name="serviceClass" value=""/>
+                    <property name="operation" value="getServiceMultiDb"/>
+                    <property name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute" value="http://www.mulesoft.org/schema/mule/cxf/jaxws-client"/>
+                    <property name="mtomEnabled" value="false"/>
+                    <property name="enableMuleSoapHeaders" value="true"/>
+                    <property name="clientClass" value="com.bankmega.multidb.WsMultiDbService"/>
+                    <property name="decoupledEndpoint" value=""/>
+                </properties>
+                <description></description>
+            </pattern>
+            <endpoint direction="Outbound" message-exchange-pattern="OneWay" name="HTTP" type="http://www.mulesoft.org/schema/mule/http/endpoint" entity-id="d1464cab-8963-4100-bb4a-0c1a9b0a25f3">
+                <properties>
+                    <property name="exchange-pattern" value="one-way"/>
+                    <property name="exchange-pattern" value="request-response"/>
+                    <property name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute" value="http://www.mulesoft.org/schema/mule/http/endpoint"/>
+                    <property name="httpLabel"/>
+                    <property name="host"/>
+                    <property name="port"/>
+                    <property name="path"/>
+                    <property name="method"/>
+                    <property name="businessEventsLabel"/>
+                    <property name="tracking:enable-default-events"/>
+                    <property name="address" value="http://10.14.18.159:8080/middleware/services/ServicePortTypeBndPortMultiDb"/>
+                    <property name="encoding"/>
+                    <property name="disableTransportTransformer"/>
+                    <property name="mimeType"/>
+                    <property name="responseTimeout"/>
+                    <property name="followRedirects"/>
+                    <property name="connector-ref"/>
+                    <property name="ref"/>
+                    <property name="transformer-refs"/>
+                    <property name="responseTransformer-refs"/>
+                    <property name="user"/>
+                    <property name="password"/>
+                    <property name="contentType"/>
+                    <property name="keep-alive"/>
+                </properties>
+            </endpoint>
+        </lane>
+    </flow>
+    <flow SubFlow="false" name="mainFlow">
+        <properties>
+            <property name="processingStrategy2"/>
+            <property name="processingStrategy"/>
+            <property name="bussinessEventsLabel"/>
+            <property name="tracking:enable-default-events"/>
+        </properties>
+        <lane hadOnlyOneElement="false" entity-id="0ec97e36-c8ee-443c-acb0-5f381c2a6b1c">
+            <endpoint direction="Inbound" message-exchange-pattern="OneWay" name="HTTP" type="http://www.mulesoft.org/schema/mule/http/endpoint" entity-id="f723f1fb-97e3-47c3-b8f3-4737a7cef719">
+                <properties>
+                    <property name="exchange-pattern" value="one-way"/>
+                    <property name="exchange-pattern" value="request-response"/>
+                    <property name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute" value="http://www.mulesoft.org/schema/mule/http/endpoint"/>
+                    <property name="httpLabel"/>
+                    <property name="host" value="localhost"/>
+                    <property name="port" value="8082"/>
+                    <property name="path"/>
+                    <property name="method"/>
+                    <property name="businessEventsLabel"/>
+                    <property name="tracking:enable-default-events"/>
+                    <property name="address"/>
+                    <property name="encoding"/>
+                    <property name="disableTransportTransformer"/>
+                    <property name="mimeType"/>
+                    <property name="responseTimeout"/>
+                    <property name="followRedirects"/>
+                    <property name="connector-ref"/>
+                    <property name="ref"/>
+                    <property name="transformer-refs"/>
+                    <property name="responseTransformer-refs"/>
+                    <property name="user"/>
+                    <property name="password"/>
+                    <property name="contentType"/>
+                    <property name="keep-alive"/>
+                </properties>
+            </endpoint>
+            <pattern name="Flow Reference" type="http://www.mulesoft.org/schema/mule/core/flow-ref" entity-id="238ce338-e0a3-44bc-9dcd-742a7b8a996e">
+                <properties>
+                    <property name="name" value="multiDBCaller"/>
+                </properties>
+            </pattern>
+            <pattern name="Transformer Reference" type="org.mule.tooling.ui.modules.core.pattern.globalXformRef" entity-id="7a2da0b3-7879-4eb7-851d-4ecfb6572a4b">
+                <properties>
+                    <property name="ref" value="OutputServiceMultiDb"/>
+                </properties>
+            </pattern>
+            <pattern name="Object to XML" type="org.mule.tooling.ui.modules.core.pattern.objectToXmlTransformer" entity-id="c96439cb-5d82-4110-9c51-0d260f90aca8">
+                <properties>
+                    <property name="returnClass"/>
+                    <property name="ignoreBadInput"/>
+                    <property name="encoding"/>
+                    <property name="mimeType"/>
+                    <property name="driverClass"/>
+                    <property name="acceptMuleMessage"/>
+                </properties>
+            </pattern>
+        </lane>
+    </flow>
+    <description></description>
+</mule-configuration>

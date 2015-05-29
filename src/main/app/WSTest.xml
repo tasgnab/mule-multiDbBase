@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" xmlns:context="http://www.springframework.org/schema/context" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="CE-3.3.0" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd 
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd 
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd 
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd 
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd 
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd ">
+    <custom-transformer class="com.bankmega.multidb.transformer.RequestToInputServiceMultiDb" name="InputServiceMultiDb" doc:name="InputServiceMultiDb"/>
+    <context:property-placeholder location="classpath:service.properties"/>
+    <spring:beans>
+        <spring:bean id="Bean" name="props" class="com.bankmega.multidb.beans.MapHolder">
+            <spring:property name="map">
+                <spring:map>
+                    <spring:entry key="/person/get" value="${/person/get}"/>
+                    <spring:entry key="/ib/getUser" value="${/ib/getUser}"/>
+                </spring:map>
+            </spring:property>
+        </spring:bean>
+    </spring:beans>
+    <custom-transformer class="com.bankmega.multidb.transformer.OutputServiceMultiDbToMap" name="OutputServiceMultiDb" doc:name="Java"/>
+    <sub-flow name="multiDBCaller" doc:name="multiDBCaller">
+        <transformer ref="InputServiceMultiDb" doc:name="Request to InputServiceMultiDb"/>
+        <cxf:jaxws-client operation="getServiceMultiDb" clientClass="com.bankmega.multidb.WsMultiDbService" port="ServicePortTypeBndPortMultiDb" enableMuleSoapHeaders="true" doc:name="getServiceMultiDb"/>
+        <http:outbound-endpoint exchange-pattern="request-response" address="http://10.14.18.159:8080/middleware/services/ServicePortTypeBndPortMultiDb" doc:name="HTTP"/>
+    </sub-flow>
+    <flow name="mainFlow" doc:name="mainFlow">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8082" doc:name="HTTP"/>
+        <flow-ref name="multiDBCaller" doc:name="Flow Reference"/>
+        <transformer ref="OutputServiceMultiDb" doc:name="Transformer Reference"/>
+        <mulexml:object-to-xml-transformer doc:name="Object to XML"/>
+    </flow>
+</mule>
