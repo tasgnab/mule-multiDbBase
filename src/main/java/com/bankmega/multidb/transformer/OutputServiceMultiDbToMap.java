@@ -1,6 +1,7 @@
 package com.bankmega.multidb.transformer;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.mule.DefaultMuleMessage;
 import org.mule.api.MuleContext;
@@ -9,12 +10,9 @@ import org.mule.api.MuleMessage;
 import org.mule.api.transformer.TransformerException;
 import org.mule.transformer.AbstractMessageTransformer;
 
-import com.bankmega.multidb.ArrayOfRequest;
-import com.bankmega.multidb.InputServiceMultiDb;
+import com.bankmega.multidb.Map;
+import com.bankmega.multidb.MapItem;
 import com.bankmega.multidb.OutputServiceMultiDb;
-import com.bankmega.multidb.RequestServiceMultiDb;
-import com.bankmega.multidb.beans.MapHolder;
-import com.bankmega.multidb.model.ServiceProp;
 
 
 public class OutputServiceMultiDbToMap extends AbstractMessageTransformer {
@@ -22,7 +20,6 @@ public class OutputServiceMultiDbToMap extends AbstractMessageTransformer {
   @Override
   public Object transformMessage(MuleMessage message, String outputEncoding) throws TransformerException {
     // TODO Auto-generated method stub
-//	  System.out.println(">>>>>"+message.toString());
 	  HashMap<String,Object> response = new HashMap<String,Object>();
 	  HashMap<String,Object> respHeader = new HashMap<String,Object>();
 	  OutputServiceMultiDb out = (OutputServiceMultiDb) message.getPayload();
@@ -39,7 +36,7 @@ public class OutputServiceMultiDbToMap extends AbstractMessageTransformer {
 			  respHeader.put("respText", "Not Found");
 			  respHeader.put("respDesc", "No transaction data found.");
 		  }
-	  }if (respCode.equals("500")){
+	  } else if (respCode.equals("500")){
 		  if (respDesc.contains("Security Exception")){
 			  respHeader.put("respCode", "401");
 			  respHeader.put("respText", "Unauthorized");
@@ -49,14 +46,40 @@ public class OutputServiceMultiDbToMap extends AbstractMessageTransformer {
 			  respHeader.put("respText", "Internal Server Error");
 			  respHeader.put("respDesc", "Please contact Bank Mega Support.");
 		  }
+	  } else if (respCode.equals("201")){
+		  respHeader.put("respCode", "400");
+		  respHeader.put("respText", "Bad Request");
+		  respHeader.put("respDesc", "Invalid request.");
+
 	  }
-	  OutputServiceMultiDb a = new OutputServiceMultiDb();
-	  a.setResponseCode(out.getResponseCode());
-	  a.setResponseDescription(out.getResponseDescription());
-	  a.setTotalRow(out.getTotalRow());
+//	  OutputServiceMultiDb a = new OutputServiceMultiDb();
+//	  a.setResponseCode(out.getResponseCode());
+//	  a.setResponseDescription(out.getResponseDescription());
+//	  a.setTotalRow("0");
+	  
+	  HashMap<Integer,Object> respBody = new HashMap<Integer,Object>();
+	  if(totalRow>0){
+		  Map[] recordMap = out.getRecord();
+		  int count = 0;
+		  for (Map map : recordMap) {
+				List<MapItem> itemList = map.getItem();
+				HashMap<String, Object>singleRecord = new HashMap<String, Object>();
+				for (MapItem mapItem : itemList) {
+					Map resultMap = (Map)mapItem.getValue();
+					List<MapItem> resuList = resultMap.getItem();
+
+					for (MapItem mapItem2 : resuList) {
+						singleRecord.put((String)mapItem2.getKey(),mapItem2.getValue());
+					}
+				}
+				respBody.put(count++, singleRecord);
+		  }
+	  }
+	  
 	  response.put("respHeader", respHeader);
-	  response.put("respBody", respHeader);
-    return a;
+	  response.put("respBody", respBody);
+	  
+    return response;
   }
   
 	public String sendNotifyProcessSync(String processName,MuleContext context,

@@ -49,21 +49,8 @@ public class RequestToInputServiceMultiDb extends AbstractMessageTransformer {
 	      request.getItem().add(req);
 	  }
 	  service.setArrRequest(request);
+	  message.setPayload(service);
     return service;
   }
   
-	public String sendNotifyProcessSync(String processName,MuleContext context,
-			HashMap<String, Object> parameters) {
-		DefaultMuleMessage message = new DefaultMuleMessage(parameters, context);
-		try {
-			context.getClient().send("vm://" + processName,
-					message);
-		} catch (MuleException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return null;
-	}
-
 }
